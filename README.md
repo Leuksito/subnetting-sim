@@ -61,6 +61,10 @@ subnetcalc verify 192.168.1.50 192.168.1.0/24
 
 <img src="docs/img/cli-info.png" alt="subnetcalc info 192.168.1.10/24" width="720">
 
+Acepta `IP/prefijo`, `IP máscara` (con espacio) o una IP suelta. En IPv4 sin
+máscara se infiere por clases (p. ej. `192.168.1.0` → `/24`). IPv6 sin prefijo
+es `/128`.
+
 ```
 $ subnetcalc info 192.168.1.10/24
   Entrada             192.168.1.10/24
@@ -108,6 +112,13 @@ los bloques `spanning` que cubren el rango.
 
 Dice si una IP pertenece a una red y qué **rol** juega: `host`, `network`,
 `broadcast` o `none` (con soporte de /31 y /32 según RFC 3021).
+
+> **Sin máscara en IPv4**: si introduces la red sin prefijo (p. ej.
+> `192.168.1.0`), se infiere la máscara **por clases** (A=/8, B=/16, C=/24,
+> loopback=/8). Así `verify 192.168.1.50 192.168.1.0` responde `pertenece: sí`
+> (red `192.168.1.0/24`) en vez de tratarla como `/32`. La nota indica cuándo
+> la máscara fue inferida. Multicast/reservado (224–255) no se infiere.
+> IPv6 sin prefijo se mantiene como `/128`.
 
 ### Formatos de salida
 

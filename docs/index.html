@@ -141,7 +141,10 @@ footer { padding: 1.5rem 0; color: var(--muted); text-align: center; }
         <li><code>split 10.0.0.0/24 --hosts 50</code> — subredes de 50 hosts</li>
         <li><code>vlsm 192.168.1.0/24 --needs 50,25,10,2</code></li>
         <li><code>supernet 192.168.0.0/24 192.168.1.0/24</code></li>
+        <li><code>verify 192.168.1.50 192.168.1.0</code> — IPv4 sin máscara: se infiere por clases (C=/24)</li>
       </ul>
+      <p>💡 En IPv4 puedes omitir la máscara: <code>192.168.1.0</code> → /24, <code>10.0.0.0</code> → /8,
+        <code>172.16.0.0</code> → /16. IPv6 sin prefijo se trata como /128.</p>
       <p>¿Prefieres la terminal? Hay una CLI: <code>subnetcalc info 192.168.1.10/24</code>.</p>
     </section>
   </main>
