@@ -156,16 +156,31 @@ footer { padding: 1.5rem 0; color: var(--muted); text-align: center; }
   <!-- Pyodide (CPython en WASM) -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
   <script>
-  // Ficheros del paquete subnetcalc a cargar desde jsDelivr (rama main).
-  // Así la web siempre usa el código actual del repo, sin duplicar ni desfasar.
+  // Ficheros del paquete subnetcalc a cargar desde jsDelivr.
   const PKG_FILES = [
     "__init__.py", "exceptions.py", "limits.py", "sanitize.py",
     "core.py", "subnets.py", "vlsm.py", "supernet.py", "verify.py", "export.py"
   ];
-  const PKG_BASE = "https://cdn.jsdelivr.net/gh/Leuksito/subnetting-sim@main/src/subnetcalc/";
-  // Cache-busting: al cambiar el código del paquete, sube PKG_VER para que los
-  // navegadores recarguen los .py en vez de usar la versión cacheada.
-  const PKG_VER = "2";
+  // Base pinned al COMMIT SHA (inmutable): jsDelivr cachea por versión, así cada
+  // push genera URLs nuevas y la web carga SIEMPRE el código actual, sin caché
+  // stale. El SHA se obtiene en tiempo de ejecución; si falla, se usa @main.
+  const PKG_FALLBACK = "https://cdn.jsdelivr.net/gh/Leuksito/subnetting-sim@main/src/subnetcalc/";
+
+  async function resolvePkgBase() {
+    try {
+      const r = await fetch(
+        "https://api.github.com/repos/Leuksito/subnetting-sim/commits/main",
+        { cache: "no-cache" }
+      );
+      if (r.ok) {
+        const j = await r.json();
+        return `https://cdn.jsdelivr.net/gh/Leuksito/subnetting-sim@${j.sha}/src/subnetcalc/`;
+      }
+    } catch (e) {
+      console.warn("No se pudo resolver el SHA del commit; usando @main", e);
+    }
+    return PKG_FALLBACK;
+  }
 
   // Bridge Python: recibe la acción y los campos del formulario y devuelve
   // un JSON {title, body, error}. Reutiliza analyze/split_network/vlsm_allocate/
@@ -238,10 +253,11 @@ calc
     try {
       py = await loadPyodide();
       setStatus('<span class="dot"></span>Cargando paquete subnetcalc…', "");
+      const base = await resolvePkgBase();
       const FS = py.FS;
       FS.mkdirTree("/tmp/pkg/subnetcalc");
       for (const f of PKG_FILES) {
-        const r = await fetch(PKG_BASE + f + "?v=" + PKG_VER, { cache: "no-cache" });
+        const r = await fetch(base + f);
         if (!r.ok) throw new Error(`No se pudo cargar ${f} (${r.status})`);
         FS.writeFile("/tmp/pkg/subnetcalc/" + f, await r.text());
       }
