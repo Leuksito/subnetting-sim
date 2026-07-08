@@ -5,7 +5,7 @@ from __future__ import annotations
 import ipaddress
 from dataclasses import dataclass
 
-from subnetcalc.core import SubnetError, _host_range
+from subnetcalc.core import SubnetError, _host_range, parse_network
 from subnetcalc.exceptions import SecurityError
 from subnetcalc.limits import MAX_INPUT_LENGTH
 
@@ -48,16 +48,19 @@ def verify_ip(ip_input: str, network_input: str) -> Verification:
     except (ValueError, TypeError) as exc:
         raise SubnetError(f"IP no válida: {ip_input!r} ({exc})") from exc
 
-    raw = network_input.strip()
-    normalized = raw.replace(" ", "/") if " " in raw and "/" not in raw else raw
-    try:
-        net = ipaddress.ip_network(normalized, strict=False)
-    except (ValueError, TypeError) as exc:
-        raise SubnetError(f"Red no válida: {network_input!r} ({exc})") from exc
+    net = parse_network(network_input)
 
     is_v4 = isinstance(net, ipaddress.IPv4Network)
     if ip.version != net.version:
         raise SubnetError(f"La IP {ip} es IPv{ip.version} pero la red es IPv{net.version}")
+
+    # ¿Se infirió la máscara por clases? (IPv4 sin prefijo explícito)
+    raw_net = network_input.strip()
+    inferred = "/" not in raw_net and " " not in raw_net and is_v4 and net.prefixlen in (8, 16, 24)
+    inferred_suffix = ""
+    if inferred:
+        letra = {8: "A", 16: "B", 24: "C"}[net.prefixlen]
+        inferred_suffix = f" (máscara /{net.prefixlen} inferida por clase {letra})"
 
     belongs = ip in net
     if not belongs:
@@ -69,7 +72,7 @@ def verify_ip(ip_input: str, network_input: str) -> Verification:
             role="none",
             is_first_host=False,
             is_last_host=False,
-            note=f"{ip} no pertenece a {net}",
+            note=f"{ip} no pertenece a {net}{inferred_suffix}",
         )
 
     first, last, _usable, _bcast = _host_range(net)
@@ -91,6 +94,9 @@ def verify_ip(ip_input: str, network_input: str) -> Verification:
     else:
         role = "host"
         note = "Host utilizable"
+
+    if inferred_suffix:
+        note = f"{note}{inferred_suffix}"
 
     return Verification(
         ip=str(ip),

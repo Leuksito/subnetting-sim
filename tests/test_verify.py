@@ -72,3 +72,50 @@ def test_version_mezclada_falla():
 def test_entradas_invalidas(bad_ip, bad_net):
     with pytest.raises(SubnetError):
         verify_ip(bad_ip, bad_net)
+
+
+# --- Inferencia de máscara por clases (IPv4 sin prefijo) -------------------
+
+
+def test_verify_red_sin_mascara_infiere_clase_c():
+    # Antes del fix, "192.168.1.0" se interpretaba como /32 y decía "no pertenece".
+    v = verify_ip("192.168.1.50", "192.168.1.0")
+    assert v.belongs is True
+    assert v.role == "host"
+    assert v.network == "192.168.1.0/24"
+    assert "inferida" in v.note
+
+
+def test_verify_red_sin_mascara_clase_a():
+    v = verify_ip("10.5.0.1", "10.0.0.0")
+    assert v.belongs is True
+    assert v.network == "10.0.0.0/8"
+    assert "clase A" in v.note
+
+
+def test_verify_red_sin_mascara_clase_b():
+    v = verify_ip("172.16.5.5", "172.16.0.0")
+    assert v.belongs is True
+    assert v.network == "172.16.0.0/16"
+    assert "clase B" in v.note
+
+
+def test_verify_red_sin_mascara_no_pertenece():
+    v = verify_ip("192.168.2.50", "192.168.1.0")  # /24 inferido
+    assert v.belongs is False
+    assert v.role == "none"
+    assert "inferida" in v.note
+
+
+def test_verify_direccion_de_red_con_inferencia():
+    v = verify_ip("192.168.1.0", "192.168.1.0")
+    assert v.belongs is True
+    assert v.role == "network"
+    assert "inferida" in v.note
+
+
+def test_verify_con_mascara_no_infiere():
+    # Si el usuario pone el prefijo explícito, no se menciona inferencia.
+    v = verify_ip("192.168.1.50", "192.168.1.0/24")
+    assert v.belongs is True
+    assert "inferida" not in v.note

@@ -103,3 +103,32 @@ def test_to_dict_contiene_todos_los_campos():
     assert "network" in d
     assert "reverse_dns" in d
     assert len(d) == 20
+
+
+# --- Inferencia de máscara por clases (IPv4 sin prefijo) -------------------
+
+
+def test_analyze_ipv4_sin_mascara_infiere_clase_c():
+    assert analyze("192.168.1.0").prefix_length == 24
+    assert analyze("192.168.1.50").network == "192.168.1.0/24"
+
+
+def test_analyze_clase_a_sin_mascara():
+    assert analyze("10.0.0.0").prefix_length == 8
+
+
+def test_analyze_clase_b_sin_mascara():
+    assert analyze("172.16.0.0").prefix_length == 16
+
+
+def test_analyze_loopback_sin_mascara():
+    assert analyze("127.0.0.0").prefix_length == 8  # clase A
+
+
+def test_analyze_multicast_sin_mascara_no_infiere():
+    # 224.x es multicast: no hay máscara por clases -> /32
+    assert analyze("224.0.0.1").prefix_length == 32
+
+
+def test_analyze_ipv6_sin_mascara_es_128():
+    assert analyze("2001:db8::1").prefix_length == 128

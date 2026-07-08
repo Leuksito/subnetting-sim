@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import ipaddress
 
-from subnetcalc.core import SubnetError, analyze
+from subnetcalc.core import SubnetError, analyze, parse_network
 from subnetcalc.exceptions import SecurityError
 from subnetcalc.limits import MAX_HOSTS_NEEDED, MAX_VLSM_NEEDS
 from subnetcalc.subnets import prefix_for_hosts, usable_for_prefix
@@ -27,7 +27,7 @@ def vlsm_allocate(network_input: str, needs: list[int]) -> dict:
     if any(h > MAX_HOSTS_NEEDED for h in needs):
         raise SecurityError(f"Una necesidad supera el máximo permitido ({MAX_HOSTS_NEEDED})")
 
-    net = ipaddress.ip_network(network_input, strict=False)
+    net = parse_network(network_input)
     is_v4 = isinstance(net, ipaddress.IPv4Network)
 
     # Ordenar de mayor a menor necesidad, conservando el índice original.

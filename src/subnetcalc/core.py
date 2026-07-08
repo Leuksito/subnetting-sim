@@ -104,15 +104,34 @@ def _host_range(net: ipaddress.IPv4Network | ipaddress.IPv6Network) -> tuple:
     return str(first), str(last), count, None  # IPv6: sin broadcast
 
 
-def analyze(network_input: str) -> SubnetInfo:
-    """Analiza una entrada tipo ``IP/prefijo`` o ``IP máscara``.
+def _classful_prefix(first_octet: int) -> int | None:
+    """Prefijo por clases para IPv4 si no se especifica máscara.
 
-    Acepta formatos como ``192.168.1.10/24``, ``10.0.0.0 255.0.0.0`` o
-    ``2001:db8::/32``. Los bits de host se permiten (``strict=False``).
+    Devuelve el prefijo clásico (A=/8, B=/16, C=/24, loopback=/8) o None para
+    multicast/reservado (no se infiere). Es solo un valor por defecto útil
+    como herramienta de estudio; lo moderno es CIDR explícito.
+    """
+    if 1 <= first_octet <= 127:
+        return 8  # clase A (incluye loopback 127)
+    if 128 <= first_octet <= 191:
+        return 16  # clase B
+    if 192 <= first_octet <= 223:
+        return 24  # clase C
+    return None  # multicast (224-239) / reservado (240-255): no inferir
+
+
+def parse_network(network_input: str) -> ipaddress.IPv4Network | ipaddress.IPv6Network:
+    """Parsea una red IPv4/IPv6 de forma robusta.
+
+    - Acepta ``IP/prefijo``, ``IP máscara`` (con espacio) o una IP suelta.
+    - Si es una **dirección IPv4 sin máscara**, infiere el prefijo por clases
+      (ver :func:`_classful_prefix`), de modo que ``192.168.1.0`` se interprete
+      como ``/24`` en vez de ``/32``. Esto evita el falso "no pertenece" al
+      verificar una IP en una red introducida sin prefijo.
+    - IPv6 sin prefijo se mantiene como ``/128`` (dirección única).
     """
     if not network_input or not network_input.strip():
         raise SubnetError("Entrada vacía")
-
     if len(network_input) > MAX_INPUT_LENGTH:
         raise SecurityError(
             f"Entrada demasiado larga ({len(network_input)} > {MAX_INPUT_LENGTH} caracteres)"
@@ -122,10 +141,33 @@ def analyze(network_input: str) -> SubnetInfo:
     # Permitir "IP máscara" (con espacio) además de "IP/prefijo"
     normalized = raw.replace(" ", "/") if " " in raw and "/" not in raw else raw
 
+    # Dirección IPv4 suelta (sin máscara): inferir prefijo por clases.
+    if "/" not in normalized:
+        try:
+            addr = ipaddress.ip_address(normalized)
+        except ValueError:
+            addr = None
+        if isinstance(addr, ipaddress.IPv4Address):
+            p = _classful_prefix(int(addr) >> 24)
+            if p is not None:
+                normalized = f"{normalized}/{p}"
+
     try:
-        net = ipaddress.ip_network(normalized, strict=False)
+        return ipaddress.ip_network(normalized, strict=False)
     except (ValueError, TypeError) as exc:
         raise SubnetError(f"Red/IP no válida: {network_input!r} ({exc})") from exc
+
+
+def analyze(network_input: str) -> SubnetInfo:
+    """Analiza una entrada tipo ``IP/prefijo`` o ``IP máscara``.
+
+    Acepta formatos como ``192.168.1.10/24``, ``10.0.0.0 255.0.0.0`` o
+    ``2001:db8::/32``. Los bits de host se permiten (``strict=False``).
+    Si la entrada es una IPv4 sin máscara, se infiere por clases (ver
+    :func:`parse_network`).
+    """
+    net = parse_network(network_input)  # valida None/vacío/longitud
+    raw = network_input.strip()
 
     is_v4 = isinstance(net, ipaddress.IPv4Network)
     version = "IPv4" if is_v4 else "IPv6"

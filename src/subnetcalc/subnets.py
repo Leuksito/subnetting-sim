@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import ipaddress
 
-from subnetcalc.core import SubnetError, analyze
+from subnetcalc.core import SubnetError, analyze, parse_network
 from subnetcalc.exceptions import SecurityError
 from subnetcalc.limits import MAX_SUBNETS
 
@@ -42,7 +42,7 @@ def split_network(network_input: str, *, count: int | None = None, hosts: int | 
     - ``count``: número de subredes (debe ser potencia de 2).
     - ``hosts``: mínimo de hosts por subred; se calcula el prefijo óptimo.
     """
-    net = ipaddress.ip_network(network_input, strict=False)
+    net = parse_network(network_input)
     is_v4 = isinstance(net, ipaddress.IPv4Network)
     max_prefix = 32 if is_v4 else 128
 

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import ipaddress
 
-from subnetcalc.core import SubnetError
+from subnetcalc.core import SubnetError, parse_network
 from subnetcalc.exceptions import SecurityError
-from subnetcalc.limits import MAX_INPUT_LENGTH, MAX_SUPERNET_INPUTS
+from subnetcalc.limits import MAX_SUPERNET_INPUTS
 
 
 def summarize(networks: list[str]) -> dict:
@@ -30,12 +30,7 @@ def summarize(networks: list[str]) -> dict:
         s = s.strip()
         if not s:
             continue
-        if len(s) > MAX_INPUT_LENGTH:
-            raise SecurityError(f"Red demasiado larga: {s[:32]!r}…")
-        try:
-            nets.append(ipaddress.ip_network(s, strict=False))
-        except (ValueError, TypeError) as exc:
-            raise SubnetError(f"Red no válida: {s!r} ({exc})") from exc
+        nets.append(parse_network(s))  # infiere máscara por clases si es IPv4 sin prefijo
 
     if not nets:
         raise SubnetError("La lista de redes está vacía")

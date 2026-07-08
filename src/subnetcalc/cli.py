@@ -7,6 +7,7 @@ Cada uno admite ``--format table|json|csv|html``.
 from __future__ import annotations
 
 import argparse
+import html
 import sys
 
 from subnetcalc import (
@@ -160,7 +161,7 @@ def _render_vlsm(res: dict, fmt: str, title: str) -> str:
     # html
     sections = [("Asignaciones", list_to_html_table(res["assignments"], VLSM_COLS, VLSM_TITLES))]
     if res["free_blocks"]:
-        items = "".join(f"<li><code>{b}</code></li>" for b in res["free_blocks"])
+        items = "".join(f"<li><code>{html.escape(b)}</code></li>" for b in res["free_blocks"])
         free_html = f"<ul>{items}</ul>"
         sections.append((f"Bloques libres ({res['free_count']})", free_html))
     return render_html_page(title, sections)
