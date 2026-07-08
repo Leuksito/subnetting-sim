@@ -54,14 +54,6 @@ def verify_ip(ip_input: str, network_input: str) -> Verification:
     if ip.version != net.version:
         raise SubnetError(f"La IP {ip} es IPv{ip.version} pero la red es IPv{net.version}")
 
-    # ¿Se infirió la máscara por clases? (IPv4 sin prefijo explícito)
-    raw_net = network_input.strip()
-    inferred = "/" not in raw_net and " " not in raw_net and is_v4 and net.prefixlen in (8, 16, 24)
-    inferred_suffix = ""
-    if inferred:
-        letra = {8: "A", 16: "B", 24: "C"}[net.prefixlen]
-        inferred_suffix = f" (máscara /{net.prefixlen} inferida por clase {letra})"
-
     belongs = ip in net
     if not belongs:
         return Verification(
@@ -72,7 +64,7 @@ def verify_ip(ip_input: str, network_input: str) -> Verification:
             role="none",
             is_first_host=False,
             is_last_host=False,
-            note=f"{ip} no pertenece a {net}{inferred_suffix}",
+            note=f"{ip} no pertenece a {net}",
         )
 
     first, last, _usable, _bcast = _host_range(net)
@@ -94,9 +86,6 @@ def verify_ip(ip_input: str, network_input: str) -> Verification:
     else:
         role = "host"
         note = "Host utilizable"
-
-    if inferred_suffix:
-        note = f"{note}{inferred_suffix}"
 
     return Verification(
         ip=str(ip),
