@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Subnetting Simulator — Inicio{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Simulador de subnetting</h1>
+  <p class="lead">Calcula redes IPv4/IPv6, divide en subredes, haz VLSM,
+    resume supernets y verifica IPs. Todo desde el navegador.</p>
+</section>
+
+<section class="card">
+  <form method="post" action="{{ url_for('index') }}" id="calc-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="field">
+      <label for="action">Operación</label>
+      <select id="action" name="action">
+        <option value="info">Info de una red</option>
+        <option value="split">Dividir en subredes</option>
+        <option value="vlsm">VLSM (tamaños variables)</option>
+        <option value="supernet">Supernetting / CIDR</option>
+        <option value="verify">Verificar IP en una red</option>
+      </select>
+    </div>
+
+    <div class="field" data-show="info split vlsm verify">
+      <label for="network">Red o IP/prefijo</label>
+      <input type="text" id="network" name="network"
+             placeholder="192.168.1.10/24  o  2001:db8::/32">
+    </div>
+
+    <div class="field" data-show="split">
+      <label for="count">Nº de subredes (potencia de 2)</label>
+      <input type="number" id="count" name="count" min="1" placeholder="4">
+    </div>
+    <div class="field" data-show="split">
+      <label for="hosts">…o hosts mínimos por subred</label>
+      <input type="number" id="hosts" name="hosts" min="1" placeholder="50">
+      <small>Si rellenas ambos se usa "count".</small>
+    </div>
+
+    <div class="field" data-show="vlsm">
+      <label for="needs">Necesidades de hosts (coma)</label>
+      <input type="text" id="needs" name="needs" placeholder="100,50,25,25,2">
+    </div>
+
+    <div class="field" data-show="supernet">
+      <label for="networks">Redes a resumir (separadas por espacio)</label>
+      <input type="text" id="networks" name="networks"
+             placeholder="192.168.0.0/24 192.168.1.0/24 192.168.2.0/24">
+    </div>
+
+    <div class="field" data-show="verify">
+      <label for="ip">IP a verificar</label>
+      <input type="text" id="ip" name="ip" placeholder="192.168.1.50">
+    </div>
+
+    <button type="submit" class="btn">Calcular</button>
+  </form>
+</section>
+
+<section class="hint card">
+  <h3>Atajos</h3>
+  <ul>
+    <li><code>info 192.168.1.10/24</code> — análisis completo</li>
+    <li><code>split 10.0.0.0/24 --hosts 50</code> — subredes de 50 hosts</li>
+    <li><code>vlsm 172.16.0.0/16 --needs 100,50,25,25,2</code></li>
+    <li><code>supernet 192.168.0.0/24 192.168.1.0/24</code></li>
+  </ul>
+  <p>También hay una CLI: <code>subnetcalc info 192.168.1.10/24</code></p>
+</section>
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% endblock %}

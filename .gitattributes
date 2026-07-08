@@ -1,0 +1,7 @@
+# Normalizar finales de línea a LF en el repo (consistencia cross-platform + CI).
+* text=auto eol=lf
+
+# Binarios reales: no tocar.
+*.png binary
+*.jpg binary
+*.pdf binary

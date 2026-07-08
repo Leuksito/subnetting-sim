@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ title or "Resultado" }} — subnetting-sim{% endblock %}
+{% block content %}
+<section class="card result">
+  {% if error %}
+    <div class="alert">
+      <strong>Error:</strong> {{ error }}
+    </div>
+  {% else %}
+    <h1>{{ title }}</h1>
+    <div class="result-body">
+      {{ body | safe }}
+    </div>
+  {% endif %}
+  <p><a href="{{ url_for('index') }}" class="btn ghost">← Volver</a></p>
+</section>
+{% endblock %}

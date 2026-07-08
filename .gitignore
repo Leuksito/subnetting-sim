@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribución / empaquetado
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Tests / cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# SO
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Proyecto: salida de exportaciones de ejemplo
+exports/
+
+# Logs del servidor de desarrollo
+*.log
