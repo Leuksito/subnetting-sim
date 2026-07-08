@@ -5,6 +5,7 @@
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Coverage](https://img.shields.io/badge/coverage-tokyo%20night-9cf.svg)](#tests)
+[![Live demo](https://img.shields.io/badge/demo-en%20vivo-2563eb.svg)](https://leuksito.github.io/subnetting-sim/)
 
 > Simulador de subnetting **IPv4/IPv6** con CLI y web: análisis de redes,
 > división en subredes, **VLSM**, **supernetting/CIDR** y verificación de IPs.
@@ -139,6 +140,10 @@ FLASK_DEBUG=1 flask --app subnetcalc.web.app run   # solo desarrollo local
 
 Abre <http://127.0.0.1:5000> y elige la operación. La web reutiliza el mismo
 núcleo que la CLI, así que los resultados son idénticos.
+
+> **Demo en vivo** (sin servidor): <https://leuksito.github.io/subnetting-sim/>
+> — la misma web, estática, ejecutando el Python del repo en el navegador con
+> [Pyodide](https://pyodide.io). Los datos no salen de tu máquina.
 
 <p align="center">
   <img src="docs/img/web-split.png" alt="Web: split" width="45%">&nbsp;&nbsp;
