@@ -163,6 +163,9 @@ footer { padding: 1.5rem 0; color: var(--muted); text-align: center; }
     "core.py", "subnets.py", "vlsm.py", "supernet.py", "verify.py", "export.py"
   ];
   const PKG_BASE = "https://cdn.jsdelivr.net/gh/Leuksito/subnetting-sim@main/src/subnetcalc/";
+  // Cache-busting: al cambiar el código del paquete, sube PKG_VER para que los
+  // navegadores recarguen los .py en vez de usar la versión cacheada.
+  const PKG_VER = "2";
 
   // Bridge Python: recibe la acción y los campos del formulario y devuelve
   // un JSON {title, body, error}. Reutiliza analyze/split_network/vlsm_allocate/
@@ -238,7 +241,7 @@ calc
       const FS = py.FS;
       FS.mkdirTree("/tmp/pkg/subnetcalc");
       for (const f of PKG_FILES) {
-        const r = await fetch(PKG_BASE + f);
+        const r = await fetch(PKG_BASE + f + "?v=" + PKG_VER, { cache: "no-cache" });
         if (!r.ok) throw new Error(`No se pudo cargar ${f} (${r.status})`);
         FS.writeFile("/tmp/pkg/subnetcalc/" + f, await r.text());
       }
