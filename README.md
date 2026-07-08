@@ -16,6 +16,17 @@
 - Web ligera en **Flask** con la misma API.
 - 100% testado con `pytest` (cobertura ≥ 90% en la lógica pura).
 
+## Capturas
+
+<p align="center">
+  <img src="docs/img/web-form.png" alt="Formulario web" width="45%">&nbsp;&nbsp;
+  <img src="docs/img/web-info.png" alt="Resultado info en la web" width="45%">
+</p>
+<p align="center">
+  <img src="docs/img/cli-info.png" alt="CLI: info" width="45%">&nbsp;&nbsp;
+  <img src="docs/img/cli-supernet.png" alt="CLI: supernet" width="45%">
+</p>
+
 ---
 
 ## Instalación
@@ -47,6 +58,8 @@ subnetcalc verify 192.168.1.50 192.168.1.0/24
 
 ### `info` — análisis de una red
 
+<img src="docs/img/cli-info.png" alt="subnetcalc info 192.168.1.10/24" width="720">
+
 ```
 $ subnetcalc info 192.168.1.10/24
   Entrada             192.168.1.10/24
@@ -69,16 +82,22 @@ $ subnetcalc info 192.168.1.10/24
 
 ### `split` — dividir en subredes
 
+<img src="docs/img/cli-split.png" alt="subnetcalc split" width="720">
+
 - `--count N`: N subredes iguales (N debe ser potencia de 2).
 - `--hosts H`: subredes con **al menos** H hosts utilizables (calcula el prefijo óptimo).
 
 ### `vlsm` — subnetting de longitud variable
+
+<img src="docs/img/cli-vlsm.png" alt="subnetcalc vlsm" width="720">
 
 Asigna subredes de tamaño óptimo a partir de una lista de necesidades de hosts,
 ordenadas de mayor a menor (algoritmo voraz clásico). Devuelve las asignaciones
 y los **bloques libres** restantes.
 
 ### `supernet` — resumen CIDR
+
+<img src="docs/img/cli-supernet.png" alt="subnetcalc supernet" width="720">
 
 Fusiona varias redes en el menor número de bloques posible
 (`collapse_addresses`). Indica si todo colapsa en una **supernet única** y, si no,
@@ -120,6 +139,11 @@ FLASK_DEBUG=1 flask --app subnetcalc.web.app run   # solo desarrollo local
 
 Abre <http://127.0.0.1:5000> y elige la operación. La web reutiliza el mismo
 núcleo que la CLI, así que los resultados son idénticos.
+
+<p align="center">
+  <img src="docs/img/web-split.png" alt="Web: split" width="45%">&nbsp;&nbsp;
+  <img src="docs/img/web-vlsm.png" alt="Web: VLSM" width="45%">
+</p>
 
 ---
 
